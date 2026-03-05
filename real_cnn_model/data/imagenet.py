@@ -30,7 +30,7 @@ def load_event(event_path, cfg):
     else:
         event = np.vstack([event['x_pos'], event['y_pos'], event['timestamp'], event['polarity'].astype(np.uint8)]).T
 
-    event = event.astype(np.float)
+    event = event.astype(float)
 
     # Account for int-type timestamp
     event[:, 2] /= TIME_SCALE
