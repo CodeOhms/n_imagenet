@@ -1,15 +1,15 @@
 import torch
-from base.models.model_container import ModelContainer
-from base.data.data_container import DataContainer
-from base.train.mini_batch_trainer import MiniBatchTrainer
+from n_imagenet.base.models.model_container import ModelContainer
+from n_imagenet.base.data.data_container import DataContainer
+from n_imagenet.base.train.mini_batch_trainer import MiniBatchTrainer
 from nltk.translate.bleu_score import corpus_bleu
 from tqdm import tqdm
 import torch.nn.functional as F
-from base.utils.time_utils import Timer
+from n_imagenet.base.utils.time_utils import Timer
 from datetime import datetime
 from torch.utils.tensorboard import SummaryWriter
 import pathlib
-from base.utils.tracker import SequenceTracker
+from n_imagenet.base.utils.tracker import SequenceTracker
 
 
 class CaptionTrainer(MiniBatchTrainer):
