@@ -52,31 +52,19 @@ class ImageNetContainer(DataContainer):
                 }
 
         assert self.dataloader is not None
-
-        dataloader_cfg_kwargs = {
-            "collate_fn": dict_collate_fn,
-            "batch_size": self.cfg.batch_size,
-            "num_workers": self.cfg.num_workers,
-            "drop_last": False,
-            "pin_memory": self.cfg.pin_memory
-        }
-        dataloader_final_kwargs = { }
-        for kword, karg in kwargs.items():
-            if kword in dataloader_cfg_kwargs.keys():
-                dataloader_final_kwargs[kword] = karg
-            else:
-                dataloader_final_kwargs[kword] = dataloader_cfg_kwargs[kword]
-
         if self.cfg.mode == 'train':
-            TrainLoader = DataLoader(self.dataset['train'], **dataloader_final_kwargs)
+            TrainLoader = DataLoader(self.dataset['train'], collate_fn=dict_collate_fn,
+                batch_size=self.cfg.batch_size, shuffle=True, num_workers=self.cfg.num_workers, drop_last=False, pin_memory=self.cfg.pin_memory)
 
-            ValLoader = DataLoader(self.dataset['val'], **dataloader_final_kwargs)
+            ValLoader = DataLoader(self.dataset['val'], collate_fn=dict_collate_fn,
+                batch_size=self.cfg.batch_size, shuffle=True, num_workers=self.cfg.num_workers, drop_last=False, pin_memory=self.cfg.pin_memory)
 
             self.dataloader['train'] = TrainLoader
             self.dataloader['val'] = ValLoader
 
         elif self.cfg.mode == 'test':
-            TestLoader = DataLoader(self.dataset['test'], **dataloader_final_kwargs)
+            TestLoader = DataLoader(self.dataset['test'], collate_fn=dict_collate_fn,
+                batch_size=self.cfg.batch_size, shuffle=False, num_workers=self.cfg.num_workers, drop_last=False, pin_memory=self.cfg.pin_memory)
             self.dataloader['test'] = TestLoader
 
         else:
