@@ -5,12 +5,13 @@ import torch
 
 
 class ImageNetContainer(DataContainer):
-    def __init__(self, cfg, **kwargs):
+    def __init__(self, cfg, ds_transform=None, **kwargs):
         """
         cfg contains all the contents of a config file
         """
         super(ImageNetContainer, self).__init__(cfg)
         print(f'Initializing data container {self.__class__.__name__}...')
+        self.ds_transform = ds_transform
         self.gen_dataset()
         self.gen_dataloader()
 
@@ -19,8 +20,8 @@ class ImageNetContainer(DataContainer):
         if dataset_name == 'imagenet':
             if self.cfg.mode == 'train':
 
-                train_dataset = ImageNetDataset(self.cfg, mode='train')
-                val_dataset = ImageNetDataset(self.cfg, mode='val')
+                train_dataset = ImageNetDataset(self.cfg, mode='train', transform=self.ds_transform)
+                val_dataset = ImageNetDataset(self.cfg, mode='val', transform=self.ds_transform)
 
                 self.dataset['train'] = train_dataset
                 self.dataset['val'] = val_dataset
@@ -30,7 +31,7 @@ class ImageNetContainer(DataContainer):
                     test_dataset = StreakImageNetDataset(self.cfg)
                     self.dataset['test'] = test_dataset
                 else:
-                    test_dataset = ImageNetDataset(self.cfg, mode='test')
+                    test_dataset = ImageNetDataset(self.cfg, mode='test', transform=self.ds_transform)
                     self.dataset['test'] = test_dataset
 
             else:
