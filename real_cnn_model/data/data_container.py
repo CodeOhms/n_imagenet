@@ -47,22 +47,23 @@ class ImageNetContainer(DataContainer):
         for kword, default_karg in dataloader_def_kwargs.items():
             if kword not in kwargs.keys():
                 kwargs[kword] = default_karg
+        return kwargs
 
     def gen_train_dataloader(self, **kwargs):
         assert self.dataloader is not None
-        self._handle_dataloader_kwargs(**kwargs)
+        kwargs = self._handle_dataloader_kwargs(**kwargs)
         kwargs['shuffle'] = True
         self.dataloader['train'] = DataLoader(self.dataset['train'], **kwargs)
 
     def gen_val_dataloader(self, **kwargs):
         assert self.dataloader is not None
-        self._handle_dataloader_kwargs(**kwargs)
+        kwargs = self._handle_dataloader_kwargs(**kwargs)
         kwargs['shuffle'] = True
         self.dataloader['val'] = DataLoader(self.dataset['val'], **kwargs)
 
     def gen_test_dataloader(self, **kwargs):
         assert self.dataloader is not None
-        self._handle_dataloader_kwargs(**kwargs)
+        kwargs = self._handle_dataloader_kwargs(**kwargs)
         kwargs['shuffle'] = False
         self.dataloader['test'] = DataLoader(self.dataset['test'], **kwargs)
 
@@ -70,7 +71,6 @@ class ImageNetContainer(DataContainer):
         self.gen_all_dataloaders(**kwargs)
 
     def gen_all_dataloaders(self, train_kwargs={}, val_kwargs={}, test_kwargs={}, **kwargs):
-        super().gen_dataloader()
         assert self.dataloader is not None
         if self.cfg.mode == 'train':
             self.gen_train_dataloader(**train_kwargs)
