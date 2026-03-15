@@ -1,9 +1,9 @@
 import argparse
-from base.utils.parse_utils import parse_ini, parse_value
+from n_imagenet.base.utils.parse_utils import parse_ini, parse_value
 import subprocess
-from data.data_container import ImageNetContainer
-from models.model_container import CNNContainer
-from train.trainer import CNNTrainer
+from n_imagenet.data.data_container import ImageNetContainer
+from n_imagenet.models.model_container import CNNContainer
+from n_imagenet.train.trainer import CNNTrainer
 import configparser
 from collections import namedtuple
 

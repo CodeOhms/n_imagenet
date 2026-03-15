@@ -1,7 +1,7 @@
 from torchvision.models import resnet18, resnet34, resnet50, resnet101, resnet152, squeezenet1_1
 import torch.nn as nn
 import torch
-from base.models.model_container import ModelContainer
+from n_imagenet.base.models.model_container import ModelContainer
 
 
 class CNNContainer(ModelContainer):
