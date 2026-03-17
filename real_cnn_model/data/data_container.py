@@ -1,5 +1,5 @@
 from real_cnn_model.data.imagenet import ImageNetDataset
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Sampler
 from base.data.data_container import DataContainer
 import torch
 
@@ -52,13 +52,19 @@ class ImageNetContainer(DataContainer):
     def gen_train_dataloader(self, **kwargs):
         assert self.dataloader is not None
         kwargs = self._handle_dataloader_kwargs(**kwargs)
-        kwargs['shuffle'] = True
+        if kwargs['sampler'] is not None:
+            assert isinstance(kwargs['sampler'], Sampler)
+        else:
+            kwargs['shuffle'] = True
         self.dataloader['train'] = DataLoader(self.dataset['train'], **kwargs)
 
     def gen_val_dataloader(self, **kwargs):
         assert self.dataloader is not None
         kwargs = self._handle_dataloader_kwargs(**kwargs)
-        kwargs['shuffle'] = True
+        if kwargs['sampler'] is not None:
+            assert isinstance(kwargs['sampler'], Sampler)
+        else:
+            kwargs['shuffle'] = True
         self.dataloader['val'] = DataLoader(self.dataset['val'], **kwargs)
 
     def gen_test_dataloader(self, **kwargs):
