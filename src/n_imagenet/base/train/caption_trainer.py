@@ -16,7 +16,8 @@ class CaptionTrainer(MiniBatchTrainer):
     def __init__(self, cfg, model_container: ModelContainer, data_container: DataContainer, **kwargs):
         super(CaptionTrainer, self).__init__(cfg, model_container, data_container)
         if self.cfg.checkpoint is not None:
-            self.checkpoint = torch.load(self.cfg.checkpoint)
+            self.checkpoint_path = pathlib.Path(self.cfg.checkpoint).expanduser().resolve()
+            self.checkpoint = torch.load(self.checkpoint_path)
         self.tracker = SequenceTracker()
 
     def load_status(self):
@@ -30,8 +31,8 @@ class CaptionTrainer(MiniBatchTrainer):
         self.devices[0] = torch.device('cuda:0' if self.use_cuda else 'cpu')
         time_stamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
         config_name = self.cfg.name
-        self.exp_save_dir = pathlib.Path(self.cfg.save_root_dir) / config_name
-        self.writer = SummaryWriter(pathlib.Path(self.exp_save_dir) / f'{config_name}_{self.cfg.mode}_{time_stamp}')
+        self.exp_save_dir = pathlib.Path(self.cfg.save_root_dir).expanduser().resolve() / config_name
+        self.writer = SummaryWriter(self.exp_save_dir / f'{config_name}_{self.cfg.mode}_{time_stamp}')
 
     def run(self):
 

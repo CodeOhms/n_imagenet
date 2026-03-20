@@ -21,8 +21,8 @@ class CommonTrainer(MiniBatchTrainer):
         time_stamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
         config_name = self.cfg.name.replace('/', '@').replace('=', '-').replace(',', '&') # Accout for cases where '/, =, \,' is inside config name
         config_name = config_name[:200] # Account for file names too long
-        self.exp_save_dir = pathlib.Path(self.cfg.save_root_dir) / config_name
-        self.writer = SummaryWriter(pathlib.Path(self.exp_save_dir) / f'{config_name}_{self.cfg.mode}_{time_stamp}')
+        self.exp_save_dir = pathlib.Path(self.cfg.save_root_dir).expanduser().resolve() / config_name
+        self.writer = SummaryWriter(self.exp_save_dir / f'{config_name}_{self.cfg.mode}_{time_stamp}')
         self.devices = [torch.device(f"cuda:{i}") for i in range(torch.cuda.device_count())]
         self.devices[0] = torch.device('cuda:0' if self.use_cuda else 'cpu')
         self.tracker = MiniBatchTracker()
