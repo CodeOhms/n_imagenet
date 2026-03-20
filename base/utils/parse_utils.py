@@ -8,9 +8,10 @@ EXCEPT_NONE = ['load_model']
 
 def parse_ini(config_path: str):
     read_config = configparser.ConfigParser()
-    config_name = Path(config_path).stem
+    config_file_path = Path(config_path).expanduser().resolve()
+    config_name = config_file_path.stem
 
-    read_config.read(config_path)
+    read_config.read(config_file_path)
     config_attribs = []
     data_dict = {}
 

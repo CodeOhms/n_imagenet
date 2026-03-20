@@ -895,25 +895,23 @@ class ImageNetDataset(Dataset):
     def __init__(self, cfg, mode='train'):
         super(ImageNetDataset, self).__init__()
         self.mode = mode
-        self.train_file = open(cfg.train_file, 'r').readlines()
-        self.val_file = open(cfg.val_file, 'r').readlines()
 
-        self.train_file = [(Path(s.strip())) for s in self.train_file]
-        self.val_file = [(Path(s.strip())) for s in self.val_file]
+        self.train_file_path = Path(cfg.train_file).expanduser().resolve()
+        self.val_file_path = Path(cfg.val_file).expanduser().resolve()
 
         if mode == 'train':
-            self.map_file = self.train_file
-        elif mode == 'val':
-            self.map_file = self.val_file
-        elif mode == 'test':
-            self.map_file = self.val_file
+            self._parse_sample_paths_file(self.train_file_path)
+        elif mode == 'val' or mode == 'test':
+            self._parse_sample_paths_file(self.val_file_path)
 
-        self.labels = [s.split()[1].strip() for s in open(cfg.label_map, 'r').readlines()]
-        self.labels = sorted(self.labels[:1000])
+        self.label_map_path = Path(cfg.label_map).expanduser().resolve()
+        with self.label_map_path.open('r') as f:
+            self.labels = [s.split()[1].strip() for s in f.readlines()]
+            self.labels = sorted(self.labels[:1000])
 
         if getattr(cfg, 'trim_class_count', None) is not None:
             self.labels = self.labels[:cfg.trim_class_count]
-            self.map_file = list(filter(lambda s: s.parent.stem in self.labels, self.map_file))
+            self.sample_paths = list(filter(lambda s: s.parent.stem in self.labels, self.sample_paths))
 
         self.label_map = {s: idx for idx, s in enumerate(self.labels)}
 
@@ -952,6 +950,10 @@ class ImageNetDataset(Dataset):
             self.loader = reshape_then_acc_intensity
         elif self.loader_type in ['dist', 'DiST', 'reshape_then_acc_adj_sort']:
             self.loader = reshape_then_acc_adj_sort
+    
+    def _parse_sample_paths_file(self, sample_file_path):
+        with sample_file_path.open('r') as f:
+            self.sample_paths = [(Path(s.strip())).expanduser().resolve() for s in f.readlines()]
 
     def augment_parser(self, parser):
         def new_parser(event_path):
@@ -959,7 +961,7 @@ class ImageNetDataset(Dataset):
         return new_parser
 
     def __getitem__(self, idx):
-        event_path = self.map_file[idx]
+        event_path = self.sample_paths[idx]
         label = self.label_map[event_path.parent.stem]
 
         # Load and optionally reshape event from event_path
@@ -974,4 +976,4 @@ class ImageNetDataset(Dataset):
         return event, label
 
     def __len__(self):
-        return len(self.map_file)
+        return len(self.sample_paths)
