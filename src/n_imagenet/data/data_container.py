@@ -53,7 +53,7 @@ class ImageNetContainer(DataContainer):
     def gen_train_dataloader(self, **kwargs):
         assert self.dataloader is not None
         kwargs = self._handle_dataloader_kwargs(**kwargs)
-        if kwargs['sampler'] is not None:
+        if kwargs.get('sampler', None) is not None:
             assert isinstance(kwargs['sampler'], Sampler)
         else:
             kwargs['shuffle'] = True
@@ -62,7 +62,7 @@ class ImageNetContainer(DataContainer):
     def gen_val_dataloader(self, **kwargs):
         assert self.dataloader is not None
         kwargs = self._handle_dataloader_kwargs(**kwargs)
-        if kwargs['sampler'] is not None:
+        if kwargs.get('sampler', None) is not None:
             assert isinstance(kwargs['sampler'], Sampler)
         else:
             kwargs['shuffle'] = True
