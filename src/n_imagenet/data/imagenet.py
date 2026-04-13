@@ -875,17 +875,17 @@ def random_time_flip(event_tensor, resolution=(224, 224), p=0.5):
         event_tensor[:, 3] = - event_tensor[:, 3]  # Inversion in time means inversion in polarity
     return event_tensor
 
+def default_augmentation(event):
+    event = random_time_flip(event, resolution=(IMAGE_H, IMAGE_W))
+    event = random_flip_events_along_x(event)
+    event = random_shift_events(event)
+    return event
 
 def base_augment(mode):
     assert mode in ['train', 'eval']
 
     if mode == 'train':
-        def augment(event):
-            event = random_time_flip(event, resolution=(IMAGE_H, IMAGE_W))
-            event = random_flip_events_along_x(event)
-            event = random_shift_events(event)
-            return event
-        return augment
+        return default_augmentation
 
     elif mode == 'eval':
         return None
@@ -894,8 +894,13 @@ def base_augment(mode):
 class ImageNetDataset(Dataset):
     def __init__(self, cfg, mode='train', transform=None):
         super(ImageNetDataset, self).__init__()
-        self.transform = transform
-        self.mode = mode
+        self.mode = 'train' if mode == 'train' else 'eval'
+        if transform is not None:
+            self.transform = transform
+        else:
+            self.transform = base_augment(self.mode)
+        self.train_file = open(cfg.train_file, 'r').readlines()
+        self.val_file = open(cfg.val_file, 'r').readlines()
 
         self.train_file_path = Path(cfg.train_file).expanduser().resolve()
         self.val_file_path = Path(cfg.val_file).expanduser().resolve()
@@ -951,7 +956,7 @@ class ImageNetDataset(Dataset):
             self.loader = reshape_then_acc_intensity
         elif self.loader_type in ['dist', 'DiST', 'reshape_then_acc_adj_sort']:
             self.loader = reshape_then_acc_adj_sort
-    
+
     def _parse_sample_paths_file(self, sample_file_path):
         with sample_file_path.open('r') as f:
             self.sample_paths = [(Path(s.strip())).expanduser().resolve() for s in f.readlines()]
@@ -967,15 +972,12 @@ class ImageNetDataset(Dataset):
 
         # Load and optionally reshape event from event_path
         event = self.event_parser(event_path)
-        augment_mode = 'train' if self.mode == 'train' else 'eval'
-        event = self.loader(event, augment=base_augment(augment_mode), neglect_polarity=getattr(self.cfg, 'neglect_polarity', False),
+        event = self.loader(event, augment=self.transform, neglect_polarity=getattr(self.cfg, 'neglect_polarity', False),
             global_time=getattr(self.cfg, 'global_time', True), strict=getattr(self.cfg, 'strict', False), use_image=getattr(self.cfg, 'use_image', False),
             denoise_sort=getattr(self.cfg, 'denoise_sort', False), denoise_image=getattr(self.cfg, 'denoise_image', False),
             filter_flash=getattr(self.cfg, 'filter_flash', False), filter_noise=getattr(self.cfg, 'filter_noise', False),
             quantize_sort=getattr(self.cfg, 'quantize_sort', None))
 
-        if self.transform:
-            event = self.transform(event)
         return event, label
 
     def __len__(self):
