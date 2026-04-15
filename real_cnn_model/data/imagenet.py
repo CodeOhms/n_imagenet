@@ -6,17 +6,9 @@ import numpy as np
 import random
 import torch.nn.functional as F
 
+from .event_augmentations import default_augmentation
 
-SENSOR_H = 480
-SENSOR_W = 640
-IMAGE_H = 224
-IMAGE_W = 224
-EXP_TAU = 0.3
-TIME_SCALE = 1000000
-
-CLIP_COUNT = False
-CLIP_COUNT_RATE = 0.99
-DISC_ALPHA = 3.0
+from .imagenet_constants import *
 
 # Parsing Modules
 
@@ -846,40 +838,6 @@ def reshape_then_acc_adj_sort(event_tensor, augment=None, **kwargs):
 
 # Augmentation Modules
 
-
-def random_shift_events(event_tensor, max_shift=20, resolution=(224, 224)):
-    H, W = resolution
-    x_shift, y_shift = np.random.randint(-max_shift, max_shift + 1, size=(2,))
-    event_tensor[:, 0] += x_shift
-    event_tensor[:, 1] += y_shift
-
-    valid_events = (event_tensor[:, 0] >= 0) & (event_tensor[:, 0] < W) & (event_tensor[:, 1] >= 0) & (event_tensor[:, 1] < H)
-    event_tensor = event_tensor[valid_events]
-
-    return event_tensor
-
-
-def random_flip_events_along_x(event_tensor, resolution=(224, 224), p=0.5):
-    H, W = resolution
-
-    if np.random.random() < p:
-        event_tensor[:, 0] = W - 1 - event_tensor[:, 0]
-
-    return event_tensor
-
-
-def random_time_flip(event_tensor, resolution=(224, 224), p=0.5):
-    if np.random.random() < p:
-        event_tensor = torch.flip(event_tensor, [0])
-        event_tensor[:, 2] = event_tensor[0, 2] - event_tensor[:, 2]
-        event_tensor[:, 3] = - event_tensor[:, 3]  # Inversion in time means inversion in polarity
-    return event_tensor
-
-def default_augmentation(event):
-    event = random_time_flip(event, resolution=(IMAGE_H, IMAGE_W))
-    event = random_flip_events_along_x(event)
-    event = random_shift_events(event)
-    return event
 
 def base_augment(mode):
     assert mode in ['train', 'eval']
