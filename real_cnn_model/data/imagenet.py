@@ -6,7 +6,7 @@ import numpy as np
 import random
 import torch.nn.functional as F
 
-from .event_augmentations import default_augmentation
+from .event_augmentations import default_event_augmentations
 
 from .imagenet_constants import *
 
@@ -843,7 +843,7 @@ def base_augment(mode):
     assert mode in ['train', 'eval']
 
     if mode == 'train':
-        return default_augmentation
+        return default_event_augmentations
 
     elif mode == 'eval':
         return None
