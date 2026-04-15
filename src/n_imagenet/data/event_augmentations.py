@@ -40,8 +40,8 @@ def random_time_flip(event_tensor, resolution=(IMAGE_H, IMAGE_W), p=0.5):
     return event_tensor
 
 
-def default_augmentation(event):
-    event = random_time_flip(event, resolution=(IMAGE_H, IMAGE_W))
+def default_event_augmentations(event):
+    event = random_time_flip(event)
     event = random_flip_events_along_x(event)
     event = random_shift_events(event)
     return event
